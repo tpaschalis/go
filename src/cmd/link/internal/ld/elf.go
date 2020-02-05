@@ -940,12 +940,13 @@ func elfwritebuildinfo(out *OutBuf) int {
 }
 
 func elfwritegobuildid(out *OutBuf) int {
-	sh := elfwritenotehdr(out, ".note.go.buildid", uint32(len(ELF_NOTE_GO_NAME)), uint32(len(*flagBuildid)), ELF_NOTE_GOBUILDID_TAG)
+	sh := elfwritenotehdr(out, ".note.go.buildid", ELF_NOTE_GO_NAMESZ, uint32(len(*flagBuildid)), ELF_NOTE_GOBUILDID_TAG)
 	if sh == nil {
 		return 0
 	}
 
 	out.Write(ELF_NOTE_GO_NAME)
+	out.Write8(0)
 	out.Write([]byte(*flagBuildid))
 	var zero = make([]byte, 4)
 	out.Write(zero[:int(Rnd(int64(len(*flagBuildid)), 4)-int64(len(*flagBuildid)))])
@@ -955,13 +956,14 @@ func elfwritegobuildid(out *OutBuf) int {
 
 // Go specific notes
 const (
+	ELF_NOTE_GO_NAMESZ     = 3
 	ELF_NOTE_GOPKGLIST_TAG = 1
 	ELF_NOTE_GOABIHASH_TAG = 2
 	ELF_NOTE_GODEPS_TAG    = 3
 	ELF_NOTE_GOBUILDID_TAG = 4
 )
 
-var ELF_NOTE_GO_NAME = []byte("Go\x00\x00")
+var ELF_NOTE_GO_NAME = []byte("Go\x00")
 
 var elfverneed int
 
